@@ -24,6 +24,7 @@ var controller = {
             next();
         });
     },
+    
     hasAuthorization: (req, res, next) =>{
         const authorized = req.profile && req.auth && req.profile._id === req.auth._id;
 
@@ -41,7 +42,7 @@ var controller = {
                 });
             }
             res.json(users)
-        }).select("name email updated created");
+        }).select("name email updated created role active");
     },
     getUser: (req, res) =>{
         req.profile.hashed_password = undefined;

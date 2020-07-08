@@ -11,6 +11,7 @@ const router = express.Router();
 router.post("/singup",validator.userSingupValidator,authController.singup);
 router.post("/singin",authController.singin);
 router.get("/singout",authController.singout);
+router.get("/users/all/:userId",[authController.requireSingin,userController.hasAuthorization],userController.allUsers);
 router.put("/forgot-password", authController.forgotPassword);
 router.put("/reset-password", validator.passwordResetValidator, authController.resetPassword);
 
