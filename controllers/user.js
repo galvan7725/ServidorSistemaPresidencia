@@ -9,10 +9,7 @@ var controller = {
 
     userById: (req, res, next, id) =>{
         User.findById(id)
-        .populate('following', '_id name about email created')
-        .populate('followers', '_id name about email created')
-        .populate('followingGroup', '_id')
-        .select('_id name email photo about noControl role created') 
+        .select('_id name email photo about created active role') 
         .exec((err, user) =>{
             if(err || !user){
                 return res.status(400).json({
@@ -24,6 +21,38 @@ var controller = {
             next();
         });
     },
+    adminById: (req, res, next, id) =>{
+        User.findById(id)
+        .select('_id name email photo about created active role') 
+        .exec((err, user) =>{
+            if(err || !user){
+                return res.status(400).json({
+                    error: 'User not found'
+                });
+            }
+
+            req.admin = user; //Agrega una propiedad llamada profile con la informacion del usuario
+            next();
+        });
+    },
+    disableUser : (req, res)=>{
+        let user = req.profile;
+        user.updated = Date.now();
+        user.active = "false";
+        user.save((err, result) =>{
+            if(err){
+                return res.status(400).json({
+                    error: err
+                });
+            }else{
+            user.hashed_password = undefined;
+            user.salt = undefined;
+            return res.json(user);
+            }
+        });
+
+    }
+    ,
     
     hasAuthorization: (req, res, next) =>{
         const authorized = req.profile && req.auth && req.profile._id === req.auth._id;
@@ -244,8 +273,8 @@ var controller = {
 
         //return res.status(200).json({text:text});
     },
-    hasAuthorization : (req,res,next) =>{
-        if(req.profile.role == "admin" || req.profile.role == "teacher"){
+    hasAuthorizationDelete : (req,res,next) =>{
+        if(req.admin.role == "admin"){
             next();
         }else{
             res.status(400).json({

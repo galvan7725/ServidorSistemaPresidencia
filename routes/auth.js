@@ -20,5 +20,6 @@ router.post("/social-login", authController.socialLogin);
 
 
 router.param("userId", userController.userById);
+router.param("adminId",userController.adminById);
 
 module.exports = router;
