@@ -20,13 +20,14 @@ var controller = {
             return res.status(403).send({
                 error: "El email ya existe"
             });
-        }
+        }else{
 
         const user = await new User(req.body);
         await user.save();
        return res.status(200).json({
             message: "Registro exitoso!!! Por favor acceda"
         })
+    }
     },
 
     singin: (req, res) => {
@@ -44,23 +45,38 @@ var controller = {
                 return res.status(401).json({
                     error: "El usuario con ese email no existe"
                 });
-            }
-            //Si el usuario existe, comprobar email y contraseña
-            if (!user.authenticate(password)) {
-                return res.status(401).json({
-                    error: "La contraseña no coincide"
-                });
+            }else{
+                if (!user.authenticate(password)) {
+                    return res.status(401).json({
+                        error: "La contraseña no coincide"
+                    });
+                }else{
+                    if(user.active === "true"){
+                        //Si el usuario existe, comprobar email y contraseña
+                       
+    
+                        //generate token with user id and secret
+                        const token = jwt.sign({_id: user.id}, process.env.JWT_SECRET);
+                        //persist the token with expiry date
+                        res.cookie("t",token,{expire: new Date() + 9999});
+                        //return response with user an token 
+                        const {_id, name, email,role} = user;
+                        return res.json({token,
+                            user: {_id, name, email, role}
+                        });
+    
+                    }else{
+                        return res.status(401).json({
+                            error: "El usuario fue dado de baja"
+                        });
+    
+                    }
+                }
+                
             }
 
-            //generate token with user id and secret
-            const token = jwt.sign({_id: user.id}, process.env.JWT_SECRET);
-            //persist the token with expiry date
-            res.cookie("t",token,{expire: new Date() + 9999});
-            //return response with user an token 
-            const {_id, name, email,role} = user;
-            return res.json({token,
-                user: {_id, name, email, role}
-            });
+
+            
         });
 
     },

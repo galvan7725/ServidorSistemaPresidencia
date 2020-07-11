@@ -51,8 +51,24 @@ var controller = {
             }
         });
 
-    }
-    ,
+    },
+    enableUser : (req, res)=>{
+        let user = req.profile;
+        user.updated = Date.now();
+        user.active = "true";
+        user.save((err, result) =>{
+            if(err){
+                return res.status(400).json({
+                    error: err
+                });
+            }else{
+            user.hashed_password = undefined;
+            user.salt = undefined;
+            return res.json(user);
+            }
+        });
+
+    },
     
     hasAuthorization: (req, res, next) =>{
         const authorized = req.profile && req.auth && req.profile._id === req.auth._id;

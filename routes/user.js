@@ -16,6 +16,7 @@ router.get("/users",userController.allUsers);
 router.get("/user/:userId",authController.requireSingin,userController.getUser);
 router.put("/user/:userId",authController.requireSingin,userController.updateUser);
 router.put("/user/disableUser/:userId/:adminId",[authController.requireSingin,userController.hasAuthorizationDelete],userController.disableUser);
+router.put("/user/enableUser/:userId/:adminId",[authController.requireSingin,userController.hasAuthorizationDelete],userController.enableUser);
 router.delete("/user/:userId",[authController.requireSingin,userController.hasAuthorizationDelete],userController.deleteUser);
 //photo
 router.get("/user/photo/:userId",userController.userPhoto);

@@ -8,7 +8,7 @@ const validator = require('../validations')
 
 const router = express.Router();
 
-router.post("/singup",validator.userSingupValidator,authController.singup);
+router.post("/signup/:adminId",[authController.requireSingin,validator.userSingupValidator,userController.hasAuthorizationDelete],authController.singup);
 router.post("/singin",authController.singin);
 router.get("/singout",authController.singout);
 router.get("/users/all/:userId",[authController.requireSingin,userController.hasAuthorization],userController.allUsers);
