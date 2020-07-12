@@ -4,12 +4,15 @@ const User = require('../models/user');
 const _ = require('lodash');
 const formidable = require('formidable');
 const fs = require('fs');
+const { uuid } = require('uuidv4');
+const path = require('path');
+
 
 var controller = {
 
     userById: (req, res, next, id) =>{
         User.findById(id)
-        .select('_id name email photo about created active role') 
+        .select('_id name email photo about created active role phone') 
         .exec((err, user) =>{
             if(err || !user){
                 return res.status(400).json({
@@ -105,27 +108,76 @@ var controller = {
                 });
             }
             //save user with foto
+            const email = req.profile.email;
+            User.findOne({email}, (err, user)=>{
+                if(err || !user){
+                    return res.status(400).json({error: "El usuario no existe"});
+                }else{
+                    if (!user.authenticate(fields.password1)) {
+                        return res.status(401).json({
+                            error: "La contraseña no coincide"
+                        });
+                    }else{
+                        console.log("fields",fields);
+                        let newUser = req.profile;
+                        newUser = _.extend(user, fields);
+                        newUser.updated = Date.now();
+                        if(fields.phone && !fields.phone.trim() === ""){
+                            newUser.phone = fields.phone;
+                        }
+                        //newUser._id = undefined;
+                        if(fields.password2 && !fields.password2.trim() === ""){
+                            newUser.password = fields.password2;
+                        }
+                        
+                        if(files.photo){
+                            //si existe foto, la guardamos en una carpeta
+                            let oldPath = files.photo.path;
+                            const photoPath = uuid()+files.photo.name;
+                            let newPath = path.join(__dirname,'uploads/avatars')+'/'+ photoPath;
+                            let rawData = fs.readFileSync(oldPath);
+                            fs.writeFile(newPath,rawData,(err) => {
+                                if (err){
+                                    console.log("Error:",err);
+                                    return res.status(400).json({
+                                        error:"No se pudo guardar la imagen"
+                                    })
+                                }else{
+                                    newUser.photo = photoPath;
+                                    newUser.save((err, result) =>{
+                                        if(err){
+                                            return res.status(400).json({
+                                                error: err
+                                            });
+                                        }
+                                        user.hashed_password = undefined;
+                                        user.salt = undefined;
+                                        res.json(user);
+                                    });
+            
+                                }
+                            })
+                            
+                        }else{
+                            newUser.save((err, result) =>{
+                                if(err){
+                                    return res.status(400).json({
+                                        error: err
+                                    });
+                                }
+                                user.hashed_password = undefined;
+                                user.salt = undefined;
+                                res.json(user);
+                            });
+    
+                        }
 
-            let user = req.profile;
-            user = _.extend(user, fields);
-            user.updated = Date.now();
-
-
-            if(files.photo){
-                user.photo.data = fs.readFileSync(files.photo.path);
-                user.photo.contentType = files.photo.type;
-            }
-
-            user.save((err, result) =>{
-                if(err){
-                    return res.status(400).json({
-                        error: err
-                    });
+                       
+                    }
                 }
-                user.hashed_password = undefined;
-                user.salt = undefined;
-                res.json(user);
-            });
+            })
+
+            
         });
 
         /*
@@ -168,9 +220,9 @@ var controller = {
         });
     },
     userPhoto : (req, res, next) =>{
-        if(req.profile.photo.data){
-            res.set("Content-Type", req.profile.photo.contentType);
-            return res.send(req.profile.photo.data);
+        if(req.profile.photo){
+            //res.set("Content-Type", req.profile.photo.contentType);
+            return res.sendFile(path.join(__dirname,'uploads/avatars')+'/'+req.profile.photo);
         }
          next();
 

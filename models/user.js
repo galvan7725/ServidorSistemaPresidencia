@@ -26,8 +26,7 @@ const userSchema = new mongoose.Schema({
     },
     updated: Date,
     photo: {
-        data: Buffer,
-        contentType: String
+       type:String
     },
     about:{
         type: String,
@@ -44,6 +43,9 @@ const userSchema = new mongoose.Schema({
         active:{
             type:String,
             default:"true"
+        },
+        phone: {
+            type: String
         }
     
 });
