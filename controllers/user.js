@@ -8,7 +8,7 @@ const { uuid } = require('uuidv4');
 const path = require('path');
 
 
-var controller = {
+const controller = {
 
     userById: (req, res, next, id) =>{
         User.findById(id)

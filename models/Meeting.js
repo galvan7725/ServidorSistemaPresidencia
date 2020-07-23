@@ -17,7 +17,8 @@ const meetingSchema = new mongoose.Schema({
     },
     comments:{
         type: String
-    }
+    },
+    updated: Date
     
 });
 
