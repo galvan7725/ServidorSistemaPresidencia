@@ -15,6 +15,12 @@ const meetingSchema = new mongoose.Schema({
         type: String,
         default:"pending"
     },
+    persons:[{    
+        name:String
+    }],
+    description:{
+        type:String
+    },
     comments:{
         type: String
     },
