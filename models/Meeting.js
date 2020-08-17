@@ -15,13 +15,15 @@ const meetingSchema = new mongoose.Schema({
         type: String,
         default:"pending"
     },
-    persons:[{    
-        name:String
-    }],
+    persons:[{name:String}],
+
     description:{
         type:String
     },
     comments:{
+        type: String
+    },
+    place:{
         type: String
     },
     updated: Date
