@@ -26,7 +26,13 @@ exports.meetingsByDate = (req, res, next,date)=>{
 }
 
 exports.getMeetingsByDate = (req, res)=>{
-    Meeting.find({$and : [{dateM:{ $gte : moment(req.date).startOf('day').toDate()}}, {dateM:{$lte : moment(req.date).endOf('isoWeek').toDate()}}]})
+    //get te date range
+    const dataRange = req.query.range;
+    if(dataRange.trim().length === 0){
+        res.status(400).send({ error: "Invalid date range" });
+    }else{
+
+    Meeting.find({$and : [{dateM:{ $gte : moment(req.date).startOf(dataRange).toDate()}}, {dateM:{$lte : moment(req.date).endOf(dataRange).toDate()}}]})
     .exec((err, result)=>{
         if (err || !result){
             console.log(err);
@@ -35,6 +41,7 @@ exports.getMeetingsByDate = (req, res)=>{
             res.status(200).send(result);
         }
     })
+}
 }
 
 const allM =(req, res)=>{
